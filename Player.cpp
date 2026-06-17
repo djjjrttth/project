@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-Player::Player(float x, float y, float size, float speed){
+Player::Player(float x, float y, float size, float speed): speed(speed) {
     position = sf::Vector2f(x, y);
     shape.setSize(sf::Vector2f(size, size));
     shape.setFillColor(sf::Color::White);
@@ -10,30 +10,32 @@ Player::Player(float x, float y, float size, float speed){
     shape.setPosition(position);
 }
 
-void Player::move(float deltaTime){
-    
-    
-
-        // Обработка нажатий клавиш
+void Player::move(){
+    std::cout << position.x << " " << position.y << std::endl;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::W)) {
-        shape.move(0.f, -5.f);
-        //std::cout << "W pressed!" << std::endl;
+        if (position.y - 25 > 0)
+            position.y -= speed;
+        //shape.move(0.f, -speed);
+        //std::cout << "W pressed!" << " " << speed << std::endl;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::S)) {
-        shape.move(0.f, 5.f);
+        if (position.y + 25 < 600)
+            position.y += speed;
         //std::cout << "S pressed!" << std::endl;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::A)) {
-        shape.move(-5.f, 0.f);
+        if (position.x - 25 > 0)
+            position.x -= speed;
         //std::cout << "A pressed!" << std::endl;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::D)) {
-        shape.move(5.f, 0.f);
+       if (position.x + 25 < 800)
+            position.x += speed;
         //std::cout << "D pressed!" << std::endl;
     }
 
-        // Применяем движение с учетом deltaTime и скорости
-        
+    shape.setPosition(position);
+
 }
 
 void Player::draw(sf::RenderWindow& window) {

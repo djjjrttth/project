@@ -15,9 +15,10 @@ class Player{
 
     public:
         Player(float x, float y, float size, float speed);
-        sf::Vector2f get_position() const;
+        float get_position_x() const;
+        float get_position_y() const;
         void set_position(int new_x, int new_y);
-        void move(float delta_time);
+        void move();
         void draw(sf::RenderWindow& window);
 };
 

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include <stack>
+#include <sstream>   
 
 
 // Настройки игры
@@ -21,6 +22,44 @@ const int PLAYER_SPEED = 10;
 const float START_X = 0;
 const float START_Y = CELL_SIZE;
 const std::string FILENAME_PLAYER = "src/player.png"; 
+
+
+
+// ===== ДЛЯ ТАЙМЕРА =====
+const float LEVEL_TIME_LIMIT = 30.f;   // секунд на уровень
+int level = 1;
+int score = 0;
+float timeLeft = LEVEL_TIME_LIMIT;
+bool victory = false;
+bool gameOver = false;
+sf::Clock levelClock;
+
+
+void generateMaze(std::vector<std::vector<int>>& grid);
+
+// ===== ФУНКЦИЯ СБРОСА УРОВНЯ =====
+void resetLevel(Player& player, std::vector<std::vector<int>>& maze, std::vector<sf::RectangleShape>& walls) {
+    generateMaze(maze);
+    walls.clear();
+    sf::Color wallColor(50, 50, 50);
+    for (int y = 0; y < GRID_HEIGHT; ++y) {
+        for (int x = 0; x < GRID_WIDTH; ++x) {
+            if (maze[y][x] == 1) {
+                sf::RectangleShape wall(sf::Vector2f(CELL_SIZE, CELL_SIZE));
+                wall.setPosition(x * CELL_SIZE, y * CELL_SIZE);
+                wall.setFillColor(wallColor);
+                walls.push_back(wall);
+            }
+        }
+    }
+    player.set_position(START_X, START_Y);
+    levelClock.restart();
+    timeLeft = LEVEL_TIME_LIMIT;
+    victory = false;
+    gameOver = false;
+}
+// ===== 
+
 
 //Функция для генерации лабиринта алгоритмом DFS (Recursive Backtracker)
 void generateMaze(std::vector<std::vector<int>>& grid) {
@@ -85,6 +124,19 @@ int main() {
 
     
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Project");
+    
+    // ===== ЗАГРУЗКА ШРИФТА И ТЕКСТОВ =====
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf")) {
+        std::cout << "Warning: arial.ttf not found! UI text will not be displayed.\n";
+    }
+    sf::Text timeText, scoreText, levelText, messageText;
+    timeText.setFont(font);      timeText.setCharacterSize(24); timeText.setFillColor(sf::Color::White); timeText.setPosition(10, 10);
+    scoreText.setFont(font);     scoreText.setCharacterSize(24); scoreText.setFillColor(sf::Color::Yellow); scoreText.setPosition(10, 40);
+    levelText.setFont(font);     levelText.setCharacterSize(24); levelText.setFillColor(sf::Color::Cyan); levelText.setPosition(10, 70);
+    messageText.setFont(font);   messageText.setCharacterSize(48); messageText.setFillColor(sf::Color::Red); messageText.setPosition(WINDOW_WIDTH/2 - 100, WINDOW_HEIGHT/2 - 50);
+    // ===== 
+    
     window.setFramerateLimit(60);
 
     std::vector<std::vector<int>> maze(GRID_HEIGHT, std::vector<int>(GRID_WIDTH, 1));
@@ -113,6 +165,7 @@ int main() {
     }
 
     Player player(START_X, START_Y, PLAYER_SIZE, PLAYER_SPEED, FILENAME_PLAYER);
+    resetLevel(player, maze, walls);
     
     sf::Clock clock;
 
@@ -120,6 +173,18 @@ int main() {
         
         sf::Event event;
         while (window.pollEvent(event)) {
+
+            // ===== обработка клавиш для победы/поражения
+            if (victory && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+                level++;
+                score += 10;
+                resetLevel(player, maze, walls);
+            }
+            if (gameOver && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R) {
+                resetLevel(player, maze, walls);
+            }
+            // ===== 
+
             if (event.type == sf::Event::Closed)
                 window.close();
             
@@ -139,6 +204,36 @@ int main() {
             }
         }
 
+        // ===== ЛОГИКА ТАЙМЕРА =====
+        if (!victory && !gameOver) {
+            float elapsed = levelClock.getElapsedTime().asSeconds();
+            timeLeft = LEVEL_TIME_LIMIT - elapsed;
+            if (timeLeft < 0) timeLeft = 0;
+
+            if (timeLeft <= 0) {
+                gameOver = true;
+                messageText.setString("GAME OVER\nPress R to retry");
+                messageText.setFillColor(sf::Color::Red);
+            }
+
+            // Проверка победы — когда игрок на выходе (координаты (GRID_WIDTH-1, GRID_HEIGHT-2))
+            int playerCellX = player.get_position_x() / CELL_SIZE;
+            int playerCellY = player.get_position_y() / CELL_SIZE;
+            if (playerCellX == GRID_WIDTH-1 && playerCellY == GRID_HEIGHT-2) {
+                victory = true;
+                messageText.setString("VICTORY!\nPress Enter for next level");
+                messageText.setFillColor(sf::Color::Green);
+            }
+
+            // Обновление UI
+            std::stringstream ss;
+            ss << "Time: " << (int)timeLeft;
+            timeText.setString(ss.str());
+            scoreText.setString("Score: " + std::to_string(score));
+            levelText.setString("Level: " + std::to_string(level));
+        }
+        // ===== 
+
 
         player.move(WINDOW_HEIGHT, WINDOW_WIDTH, maze);
 
@@ -147,6 +242,20 @@ int main() {
         for (const auto& wall : walls) {
             window.draw(wall);
         }
+
+        
+
+
+        // ===== ОТРИСОВКА UI =====
+        window.draw(timeText);
+        window.draw(scoreText);
+        window.draw(levelText);
+        if (victory || gameOver) {
+            window.draw(messageText);
+        }
+        // ===== 
+
+
         window.display();
     }
 

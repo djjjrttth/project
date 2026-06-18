@@ -1,73 +1,57 @@
 #include <SFML/Graphics.hpp>
+#include <ctime>
+#include <iostream> // Добавили для вывода счета в консоль
 #include "Map.h"
-#include <iostream>
+#include "Level.h"
+#include "Player.h" 
 
 int main() {
-    // Создаем окно
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Tomb of the Mask - Map Test");
-    window.setFramerateLimit(60); // Ограничим FPS, чтобы точка не летала слишком быстро
+    srand(static_cast<unsigned int>(time(0)));
+
+    LevelManager<int> levelManager;
+    levelManager.generateDynamicLevel(25, 19);
 
     Map gameMap;
+    gameMap.loadFromLayout(levelManager.getCurrentLayout());
 
-    // Твой тестовый лабиринт
-    std::vector<std::string> testLevel = {
-        "##########",
-        "#........#",
-        "#.####.#.#",
-        "#.#    #.#",
-        "#......#.#",
-        "##########"
-    };
-    gameMap.loadLevel(testLevel);
+    Player player(20.f, 20.f, 14.f, 2.f); 
 
-    // ВРЕМЕННЫЙ ИГРОК ДЛЯ ТЕСТА ТВОЕЙ КАРТЫ
-    sf::CircleShape player(12.f); // Радиус 12 пикселей (диаметр 24)
-    player.setFillColor(sf::Color::Red); // Пусть пока будет красной
-    
-    // Начальная позиция (внутри лабиринта, клетка 1,1 -> x=45, y=45)
-    float playerX = 45.f;
-    float playerY = 45.f;
-    player.setPosition(playerX, playerY);
+    int score = 0; // Переменная для подсчета собранных монеток!
 
-    float playerSpeed = 3.f; // Скорость движения точки
-    int score = 0;           // Твой счетчик очков для монеток
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Tomb of the Mask - Collaboration Edition");
+    window.setFramerateLimit(60);
 
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
+            
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+                levelManager.generateDynamicLevel(25, 19);
+                gameMap.loadFromLayout(levelManager.getCurrentLayout());
+                player = Player(20.f, 20.f, 14.f, 2.f); 
+                score = 0; // Сбрасываем счет при генерации нового уровня
+                std::cout << "New game started! Score reset.\n";
+            }
         }
 
-        // Логика движения: вычисляем, куда игрок ХОЧЕТ пойти
-        float nextX = playerX;
-        float nextY = playerY;
+        // Движение игрока
+        player.move(600, 800, levelManager.getCurrentLayout());
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))  nextX -= playerSpeed;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) nextX += playerSpeed;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))    nextY -= playerSpeed;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))  nextY += playerSpeed;
-
-        // Размеры хитбокса нашей точки (24 на 24 пикселя)
-        float pWidth = 24.f;
-        float pHeight = 24.f;
-
-        // ШАГ 2.1: Твоя проверка коллизий! 
-        // Если впереди НЕТ стены — разрешаем передвинуть точку
-        if (!gameMap.isWall(nextX, nextY, pWidth, pHeight)) {
-            playerX = nextX;
-            playerY = nextY;
-            player.setPosition(playerX, playerY);
+        // ВОТ ЭТО ДОБАВИЛИ: Каждый кадр проверяем, собрал ли игрок монетки
+        // Передаем координаты из геттеров игрока и его размер (14.f)
+        int collected = gameMap.checkCoinCollision(player.get_position_x(), player.get_position_y(), 14.f);
+        if (collected > 0) {
+            score += collected;
+            std::cout << "Coins collected: " << score << "\n"; // Пишем счет в консоль разработчика
         }
 
-        // ШАГ 2.3: Твоя проверка сбора монеток!
-        gameMap.checkCoinCollision(playerX, playerY, pWidth, pHeight, score);
-
-        // Отрисовка кадра
-        window.clear();
+        // Отрисовка
+        window.clear(sf::Color(10, 10, 20));
         
-        gameMap.draw(window); // Рисуем твою карту и монетки
-        window.draw(player);  // Рисуем игрока поверх карты
+        gameMap.draw(window);  
+        player.draw(window);   
         
         window.display();
     }

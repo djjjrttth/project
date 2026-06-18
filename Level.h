@@ -1,149 +1,116 @@
-#ifndef LEVEL_H  // 1. "Если НЕ объявлено имя LEVEL_H..."
+#ifndef LEVEL_H
 #define LEVEL_H
 
 #include <vector>
-#include <string>
-#include <fstream>
-#include <iostream>
+#include <vector>
 #include <cstdlib>
-#include <random>
-#include <stack>
-#include <algorithm>
-#include <type_traits>
+#include <ctime>
+
 using namespace std;
 
-template <typename T>
+template <int WIDTH, int HEIGHT>
 class LevelManager {
 private:
-    vector<vector<T>> currentLayout;
-    vector<vector<vector<T>>> levelTemplates;
+    // хранение координат стены/ячейки в списке границ
+    struct Cell {
+        int x, y;
+    };
 
 public:
-    //МЕТОДЫ ДЛЯ РЕЖИМА 1 (ОБУЧЕНИЕ)
-    // Они независимы, лежат здесь и готовы к использованию в любой момент
-
-    bool loadLevelFromFile(const string& filename) {
-        ifstream file(filename);
-        if (!file.is_open()) {
-            cerr << "Error: Could not open file " << filename << endl;
-            return false;
-        }
-
-        currentLayout.clear();
-        string line;
-        while (getline(file, line)) {
-            vector<T> row;
-            for (char ch : line) {
-                if constexpr (is_same_v<T, int>) {
-                    row.push_back(ch == '#' ? 1 : 0);
-                } else {
-                    row.push_back(ch);
-                }
-            }
-            currentLayout.push_back(row);
-        }
-        file.close();
-        return true;
+    LevelManager() {
+        srand(time(nullptr));
     }
 
-    void generateRandomLevel(const vector<string>& templateFiles) {
-        levelTemplates.clear();
-        for (const string& filename : templateFiles) {
-            ifstream file(filename);
-            if (file.is_open()) {
-                vector<vector<T>> tempLayout;
-                string line;
-                while (getline(file, line)) {
-                    vector<T> row;
-                    for (char ch : line) {
-                        if constexpr (is_same_v<T, int>) {
-                            row.push_back(ch == '#' ? 1 : 0);
-                        } else {
-                            row.push_back(ch);
-                        }
+    // главная функция генерации лабиринта по алгоритму Прима
+    void generatePrimMaze(vector<vector<int>>& maze) {
+        // 1.изначально всё заполнено стенами (1)
+        maze.assign(HEIGHT, vector<int>(WIDTH, 1));
+
+        // список «граничных» стен, границ
+        vector<Cell> walls;
+
+        // 2. выбор случайной стартовой точки внутри лабиринта 
+        int startX = 1 + (rand() % ((WIDTH - 2) / 2)) * 2;
+        int startY = 1 + (rand() % ((HEIGHT - 2) / 2)) * 2;
+        
+        maze[startY][startX] = 0; // делаем стартовую ячейку проходом
+
+        //добавляем соседей стартовой точки в список стен
+        addWalls(startX, startY, maze, walls);
+
+        // направления для проверки соседей (на расстоянии 2 ячеек)
+        int dx[] = { 0, 0, 2, -2 };
+        int dy[] = { 2, -2, 0, 0 };
+
+        // 3. основной цикл алгоритма
+        while (!walls.empty()) {
+            // выбор случайной стены из списка
+            int randIdx = rand() % walls.size();
+            Cell currentWall = walls[randIdx];
+
+            // проверяем, сколько вокруг этой стены УЖЕ посещенных ячеек
+            vector<Cell> visitedNeighbors;
+
+            for (int i = 0; i < 4; ++i) {
+                int nx = currentWall.x + dx[i];
+                int ny = currentWall.y + dy[i];
+
+                if (nx > 0 && nx < WIDTH - 1 && ny > 0 && ny < HEIGHT - 1) {
+                    if (maze[ny][nx] == 0) {
+                        visitedNeighbors.push_back({nx, ny});
                     }
-                    tempLayout.push_back(row);
                 }
-                levelTemplates.push_back(tempLayout);
-                file.close();
             }
+
+            // если нашли ровно одного посещенного соседа, значит, эту стену можно разрушить
+            if (visitedNeighbors.size() == 1) {
+                Cell target = visitedNeighbors[0];
+                
+                // делаем проходом саму стену
+                maze[currentWall.y][currentWall.x] = 0;
+                
+                // пробиваем путь между ними (среднюю ячейку)
+                int midX = currentWall.x + (target.x - currentWall.x) / 2;
+                int midY = currentWall.y + (target.y - currentWall.y) / 2;
+                maze[midY][midX] = 0;
+
+                // добавляем новые стены в список от текущей ячейки
+                addWalls(currentWall.x, currentWall.y, maze, walls);
+            }
+
+            // удаляем обработанную стену из списка
+            walls.erase(walls.begin() + randIdx);
         }
 
-        if (levelTemplates.empty()) {
-            cerr << "Error: No templates loaded for random generation!" << endl;
-            return;
+        // гарантируем, что по краям лабиринта всегда будут железные стены (границы карты)
+        for (int x = 0; x < WIDTH; ++x) {
+            maze[0][x] = 1;
+            maze[HEIGHT - 1][x] = 1;
         }
-
-        currentLayout.clear();
-        for (int i = 0; i < 3; ++i) {
-            int randomIndex = rand() % levelTemplates.size();
-            for (const auto& row : levelTemplates[randomIndex]) {
-                currentLayout.push_back(row);
-            }
+        for (int y = 0; y < HEIGHT; ++y) {
+            maze[y][0] = 1;
+            maze[y][WIDTH - 1] = 1;
         }
     }
 
+private:
+    // вспомогательная функция для добавления соседних стен в список
+    void addWalls(int x, int y, const vector<vector<int>>& maze, vector<Cell>& walls) {
+        int dx[] = { 0, 0, 2, -2 };
+        int dy[] = { 2, -2, 0, 0 };
 
-    // МЕТОД ДЛЯ РЕЖИМА 2 (БЕСКОНЕЧНЫЙ ЛАБИРИНТ - АЛГОРИТМ КАТИ)
+        for (int i = 0; i < 4; ++i) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
 
-    void generateDynamicLevel(int width, int height) {
-        // Внутренний алгоритм считает всё в int (Катина логика)
-        vector<vector<int>> intGrid(height, vector<int>(width, 1));
-
-        int startX = 1;
-        int startY = 1;
-        intGrid[startY][startX] = 0;
-
-        stack<std::pair<int, int>> stack;
-        stack.push({startX, startY});
-
-        random_device rd;
-        mt19937 g(rd());
-        vector<pair<int, int>> directions = {{0, -2}, {0, 2}, {-2, 0}, {2, 0}};
-
-        while (!stack.empty()) {
-            auto [x, y] = stack.top();
-            shuffle(directions.begin(), directions.end(), g);
-
-            bool found = false;
-            for (auto [dx, dy] : directions) {
-                int nx = x + dx;
-                int ny = y + dy;
-
-                if (nx > 0 && nx < width - 1 && ny > 0 && ny < height - 1 && intGrid[ny][nx] == 1) {
-                    intGrid[y + dy / 2][x + dx / 2] = 0;
-                    intGrid[ny][nx] = 0;
-                    stack.push({nx, ny});
-                    found = true;
-                    break;
+            // проверяем, что не выходим за границы и там еще стена
+            if (nx > 0 && nx < WIDTH - 1 && ny > 0 && ny < HEIGHT - 1) {
+                if (maze[ny][nx] == 1) {
+                    walls.push_back({nx, ny});
                 }
             }
-            if (!found) {
-                stack.pop();
-            }
         }
-
-        // Вход и выход
-        intGrid[1][0] = 0;
-        intGrid[height - 2][width - 1] = 0;
-
-        // Конвертируем в итоговый формат currentLayout в зависимости от типа T
-        currentLayout.clear();
-        for (int y = 0; y < height; ++y) {
-            vector<T> row;
-            for (int x = 0; x < width; ++x) {
-                if constexpr (is_same_v<T, int>) {
-                    row.push_back(intGrid[y][x]); // Если нужен int (1 или 0)
-                } else {
-                    row.push_back(intGrid[y][x] == 1 ? '#' : ' '); // Если нужен char ('#' или ' ')
-                }
-            }
-            currentLayout.push_back(row);
-        }
-    }
-
-    // Универсальный геттер для получения сетки уровня
-    vector<vector<T>> getCurrentLayout() const {
-        return currentLayout;
     }
 };
+
+#endif

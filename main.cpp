@@ -166,6 +166,7 @@ int main() {
 
     Player player(START_X, START_Y, PLAYER_SIZE, PLAYER_SPEED, FILENAME_PLAYER);
     resetLevel(player, maze, walls);
+    
     sf::Clock clock;
 
     while (window.isOpen()) {

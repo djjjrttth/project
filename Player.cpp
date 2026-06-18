@@ -5,21 +5,32 @@
 
 const int CELL_SIZE = 20;
 
-Player::Player(float x, float y, float size, float speed): speed(speed)
-{
+
+Player::Player(float x, float y, float size, float speed, std::string filename)
+    : speed(speed), filename(filename)
+{   
+    texture.loadFromFile(filename);
+    sprite.setTexture(texture);
+    
     position = sf::Vector2f(x, y);
     this->size = sf::Vector2f(size, size);
 
-    shape.setSize(this->size);
-    shape.setFillColor(sf::Color::White);
+    sf::Vector2u texSize = texture.getSize();
 
-    shape.setPosition(position);
+    float targetWidth = 40;
+    float targetHeight = 40;
+
+    sprite.setScale(targetWidth / texSize.x, targetHeight / texSize.y);
+
+    sprite.setPosition(position);
+      
 }
 
 
 
 void Player::move(int const WINDOW_HEIGHT, int const WINDOW_WIDTH, const std::vector<std::vector<int>>& maze)
 {
+
     int dx = 0, dy = 0;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::W))
@@ -83,3 +94,42 @@ int Player::get_position_y() const{
     return position.y;
 }
 
+    }
+
+
+    int nextY = position.y + dy;
+
+    left   = position.x / CELL_SIZE;
+    right  = (position.x + size.x - 1) / CELL_SIZE;
+    top    = nextY / CELL_SIZE;
+    bottom = (nextY + size.y - 1) / CELL_SIZE;
+
+    if (nextY >= 0 &&
+        nextY + size.y <= WINDOW_HEIGHT &&
+        maze[top][left] == 0 &&
+        maze[top][right] == 0 &&
+        maze[bottom][left] == 0 &&
+        maze[bottom][right] == 0){
+        position.y = nextY;
+    }
+
+    sprite.setPosition(position);
+}
+
+void Player::draw(sf::RenderWindow& window) {
+        window.draw(sprite);
+    }
+
+int Player::get_position_x() const{
+    return position.x;
+}
+
+int Player::get_position_y() const{
+    return position.y;
+}
+
+void Player::set_position(int new_x, int new_y) {
+    position.x = new_x;
+    position.y = new_y;
+    sprite.setPosition(position);
+}

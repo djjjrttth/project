@@ -147,3 +147,5 @@ public:
         return currentLayout;
     }
 };
+
+#endif

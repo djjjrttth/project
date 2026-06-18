@@ -6,19 +6,21 @@
 #include <random>
 #include <stack>
 
+
 // Настройки игры
-const int GRID_WIDTH = 41;   
-const int GRID_HEIGHT = 41;  
-const int CELL_SIZE = 20;
+const int GRID_WIDTH = 21;   
+const int GRID_HEIGHT = 21;
+const int CELL_SIZE = 40;
 const int WINDOW_WIDTH = GRID_WIDTH * CELL_SIZE;
 const int WINDOW_HEIGHT = GRID_HEIGHT * CELL_SIZE;
 
-const int PLAYER_SIZE = 20;
-const int PLAYER_SPEED = 5;
+const int PLAYER_SIZE = 40;
+const int PLAYER_SPEED = 10;
 
 
 const float START_X = 0;
 const float START_Y = CELL_SIZE;
+const std::string FILENAME_PLAYER = "src/player.png"; 
 
 //Функция для генерации лабиринта алгоритмом DFS (Recursive Backtracker)
 void generateMaze(std::vector<std::vector<int>>& grid) {
@@ -80,6 +82,8 @@ void generateMaze(std::vector<std::vector<int>>& grid) {
 
 
 int main() {
+
+    
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Project");
     window.setFramerateLimit(60);
 
@@ -108,7 +112,8 @@ int main() {
         }
     }
 
-    Player player(START_X, START_Y, PLAYER_SIZE, PLAYER_SPEED);
+    Player player(START_X, START_Y, PLAYER_SIZE, PLAYER_SPEED, FILENAME_PLAYER);
+    
     sf::Clock clock;
 
     while (window.isOpen()) {

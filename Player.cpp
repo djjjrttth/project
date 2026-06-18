@@ -3,23 +3,34 @@
 #include <iostream>
 #include <vector>
 
-const int CELL_SIZE = 20;
 
-Player::Player(float x, float y, float size, float speed): speed(speed)
-{
+const int CELL_SIZE = 40;
+
+Player::Player(float x, float y, float size, float speed, std::string filename)
+    : speed(speed), filename(filename)
+{   
+    texture.loadFromFile(filename);
+    sprite.setTexture(texture);
+    
     position = sf::Vector2f(x, y);
     this->size = sf::Vector2f(size, size);
 
-    shape.setSize(this->size);
-    shape.setFillColor(sf::Color::White);
+    sf::Vector2u texSize = texture.getSize();
 
-    shape.setPosition(position);
+    float targetWidth = 40;
+    float targetHeight = 40;
+
+    sprite.setScale(targetWidth / texSize.x, targetHeight / texSize.y);
+
+    sprite.setPosition(position);
 }
 
 
 
 void Player::move(int const WINDOW_HEIGHT, int const WINDOW_WIDTH, const std::vector<std::vector<int>>& maze)
-{
+{   
+
+    std::cout << sprite.getPosition().x << " " << sprite.getPosition().y << std::endl;
     int dx = 0, dy = 0;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::W))
@@ -68,11 +79,11 @@ void Player::move(int const WINDOW_HEIGHT, int const WINDOW_WIDTH, const std::ve
         position.y = nextY;
     }
 
-    shape.setPosition(position);
+    sprite.setPosition(position);
 }
 
 void Player::draw(sf::RenderWindow& window) {
-        window.draw(shape);
+        window.draw(sprite);
     }
 
 int Player::get_position_x() const{

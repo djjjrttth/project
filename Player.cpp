@@ -94,3 +94,8 @@ int Player::get_position_y() const{
     return position.y;
 }
 
+void Player::set_position(int new_x, int new_y) {
+    position.x = new_x;
+    position.y = new_y;
+    sprite.setPosition(position);
+}

@@ -23,8 +23,8 @@ class Player{
         void set_position(int new_x, int new_y);
         void move(int const WINDOW_HEIGHT, int const WINDOW_WIDTH, const std::vector<std::vector<int>>& maze);
         void draw(sf::RenderWindow& window);
-        Player(const Player&) = delete;
-        Player& operator=(const Player&) = delete;
+        //Player(const Player&) = delete;
+        //Player& operator=(const Player&) = delete;
 };
 
 

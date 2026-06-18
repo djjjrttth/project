@@ -13,7 +13,7 @@ public:
     Map();
     void loadFromLayout(const std::vector<std::vector<int>>& layout);
     void draw(sf::RenderWindow& window);
-
+  
     // ВОТ ЭТО ДОБАВИЛИ: метод проверяет, наступил ли игрок на монетку
     int checkCoinCollision(float playerX, float playerY, float playerSize);
-};
+};       

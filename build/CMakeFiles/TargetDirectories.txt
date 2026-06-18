@@ -1,3 +1,0 @@
-C:/Users/Саша/Documents/mains/Project/project/build/CMakeFiles/TombOfTheMask.dir
-C:/Users/Саша/Documents/mains/Project/project/build/CMakeFiles/edit_cache.dir
-C:/Users/Саша/Documents/mains/Project/project/build/CMakeFiles/rebuild_cache.dir

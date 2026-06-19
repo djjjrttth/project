@@ -20,6 +20,9 @@ UI.cpp
 Direction.h
 LevelManager.h
 LevelManager.cpp
-GameTimer.h)
+GameTimer.h
+GameTimer.cpp
+Game.h
+Game.cpp)
     
 target_link_libraries(TombOfTheMask sfml-graphics sfml-window sfml-system)

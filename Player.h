@@ -1,32 +1,32 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#pragma once
+
+#include "Config.h"
+#include "Direction.h"
+#include "Map.h"
 
 #include <SFML/Graphics.hpp>
+#include <string>
 
+class Player {
+private:
+    sf::Vector2i currentCell{1, 1};
+    sf::Vector2f pixelPosition{0.f, 0.f};
 
-class Player{
-    private:
-        int direction;
-        float speed;
-        sf::Vector2f position;
-        sf::Vector2f size;
-        sf::RectangleShape shape;
-        sf::Texture texture;
-        sf::Sprite sprite;
-        std::string filename; 
+    sf::Texture texture;
+    sf::Sprite sprite;
+    sf::RectangleShape fallbackShape;
+    bool textureLoaded = false;
 
+    bool canMove(Direction direction, const Map& map) const;
+    void updateSpritePosition();
 
-    public:
-        Player(float x, float y, float size, float speed, std::string filename);
-        int get_position_x() const;
-        int get_position_y() const;
-        void set_position(int new_x, int new_y);
-        void move(int const WINDOW_HEIGHT, int const WINDOW_WIDTH, const std::vector<std::vector<int>>& maze);
-        void draw(sf::RenderWindow& window);
-        //Player(const Player&) = delete;
-        //Player& operator=(const Player&) = delete;
+public:
+    Player() = default;
+
+    void loadTexture(const std::string& filename);
+    void reset(sf::Vector2i startCell, const Map& map);
+    bool move(Direction direction, const Map& map);
+    void draw(sf::RenderWindow& window) const;
+
+    sf::Vector2i getCell() const;
 };
-
-
-
-#endif //PLAYER_H

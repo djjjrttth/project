@@ -1,102 +1,73 @@
 #include "Player.h"
-#include <SFML/Graphics.hpp>
+#include "Config.h"
+
 #include <iostream>
-#include <vector>
-#include "Settings.h"
-//const int CELL_SIZE = 20;
 
-
-Player::Player(float x, float y, float size, float speed, std::string filename)
-    : speed(speed), filename(filename)
-{   
-    texture.loadFromFile(filename);
-    sprite.setTexture(texture);
-    
-    position = sf::Vector2f(x, y);
-    this->size = sf::Vector2f(size, size);
-
-    sf::Vector2u texSize = texture.getSize();
-
-    float targetWidth = 20;
-    float targetHeight = 20;
-
-    sprite.setScale(targetWidth / texSize.x, targetHeight / texSize.y);
-
-    sprite.setPosition(position);
-}
-
-
-
-void Player::move(int const WINDOW_HEIGHT, int const WINDOW_WIDTH, const std::vector<std::vector<int>>& maze)
-{   
-
-    std::cout << sprite.getPosition().x << " " << sprite.getPosition().y << std::endl;
-    int dx = 0, dy = 0;
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::W))
-        dy -= speed;
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::S))
-        dy += speed;
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::A))
-        dx -= speed;
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::D))
-        dx += speed;
-
-
-    int nextX = position.x + dx;
-
-    int left   = nextX / CELL_SIZE;
-    int right  = (nextX + size.x - 1) / CELL_SIZE;
-    int top    = position.y / CELL_SIZE;
-    int bottom = (position.y + size.y - 1) / CELL_SIZE;
-
-    if (nextX >= 0 &&
-        nextX + size.x <= WINDOW_WIDTH &&
-        maze[top][left] == 0 &&
-        maze[top][right] == 0 &&
-        maze[bottom][left] == 0 &&
-        maze[bottom][right] == 0){
-        position.x = nextX;
+void Player::loadTexture(const std::string& filename) {
+    textureLoaded = texture.loadFromFile(filename);
+    if (!textureLoaded) {
+        std::cerr << "Player texture was not loaded: " << filename << ". Fallback square will be used.\n";
     }
 
-
-    int nextY = position.y + dy;
-
-    left   = position.x / CELL_SIZE;
-    right  = (position.x + size.x - 1) / CELL_SIZE;
-    top    = nextY / CELL_SIZE;
-    bottom = (nextY + size.y - 1) / CELL_SIZE;
-
-    if (nextY >= 0 &&
-        nextY + size.y <= WINDOW_HEIGHT &&
-        maze[top][left] == 0 &&
-        maze[top][right] == 0 &&
-        maze[bottom][left] == 0 &&
-        maze[bottom][right] == 0){
-        position.y = nextY;
+    if (textureLoaded) {
+        sprite.setTexture(texture);
+        sf::Vector2u textureSize = texture.getSize();
+        if (textureSize.x > 0 && textureSize.y > 0) {
+            const float targetSize = Config::PlayerVisualSize;
+            sprite.setScale(targetSize / static_cast<float>(textureSize.x), targetSize / static_cast<float>(textureSize.y));
+        }
     }
 
-    sprite.setPosition(position);
+    fallbackShape.setSize(sf::Vector2f(Config::PlayerVisualSize, Config::PlayerVisualSize));
+    fallbackShape.setFillColor(sf::Color(255, 120, 70));
+    fallbackShape.setOutlineThickness(2.f);
+    fallbackShape.setOutlineColor(sf::Color::White);
 }
 
+void Player::reset(sf::Vector2i startCell, const Map& map) {
+    currentCell = startCell;
+    pixelPosition = map.cellToPixel(startCell);
+    updateSpritePosition();
+}
 
-void Player::draw(sf::RenderWindow& window) {
+bool Player::move(Direction direction, const Map& map) {
+    if (!canMove(direction, map)) {
+        return false;
+    }
+
+    const sf::Vector2i offset = directionToVector(direction);
+    currentCell = {currentCell.x + offset.x, currentCell.y + offset.y};
+    pixelPosition = map.cellToPixel(currentCell);
+    updateSpritePosition();
+    return true;
+}
+
+void Player::draw(sf::RenderWindow& window) const {
+    if (textureLoaded) {
         window.draw(sprite);
+    } else {
+        window.draw(fallbackShape);
+    }
+}
+
+sf::Vector2i Player::getCell() const {
+    return currentCell;
+}
+
+bool Player::canMove(Direction direction, const Map& map) const {
+    if (direction == Direction::None) {
+        return false;
     }
 
-int Player::get_position_x() const{
-    return position.x;
+    const sf::Vector2i offset = directionToVector(direction);
+    const sf::Vector2i nextCell(currentCell.x + offset.x, currentCell.y + offset.y);
+    return map.isWalkable(nextCell);
 }
 
-int Player::get_position_y() const{
-    return position.y;
-}
-
-void Player::set_position(int new_x, int new_y) {
-    position.x = new_x;
-    position.y = new_y;
-    sprite.setPosition(position);
+void Player::updateSpritePosition() {
+    const float offset = (static_cast<float>(Config::CellSize) - Config::PlayerVisualSize) / 2.f;
+    if (textureLoaded) {
+        sprite.setPosition(pixelPosition.x + offset, pixelPosition.y + offset);
+    }
+    fallbackShape.setPosition(pixelPosition.x + offset, pixelPosition.y + offset);
 }

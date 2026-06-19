@@ -1,4 +1,4 @@
-# Tomb of the Mask - Student Edition
+# Backrooms runner
 
 ---
 
@@ -18,7 +18,7 @@
 
 ## 1. Цель проекта
 
-Разработать 2D-игру **Tomb of the Mask - Student Edition** для персонального компьютера на языке C++ с использованием библиотеки SFML.
+Разработать 2D-игру **Backrooms runner** для персонального компьютера на языке C++ с использованием библиотеки SFML.
 
 Игрок проходит лабиринты, собирает монеты, использует бонусы времени и должен добраться до выхода до окончания таймера.
 
@@ -59,7 +59,7 @@
 
 # Реализация и работа программы
 
-## Основные функции игры «Tomb of the Mask - Student Edition»
+## Основные функции игры «Backrooms runner»
 
 ---
 
@@ -272,7 +272,7 @@ pollEvent -> update -> render
 ## Структура проекта
 
 ```text
-TombOfTheMaskStudentEdition/
+project/
 │
 ├── assets/
 │   └── images/
@@ -286,19 +286,15 @@ TombOfTheMaskStudentEdition/
 │   ├── level2.txt
 │   └── level3.txt
 │
-├── src/
-│   ├── Config.h
-│   ├── Direction.h
-│   ├── Game.cpp / Game.h
-│   ├── GameTimer.cpp / GameTimer.h
-│   ├── LevelManager.cpp / LevelManager.h
-│   ├── Map.cpp / Map.h
-│   ├── Player.cpp / Player.h
-│   ├── ResourcePath.h
-│   ├── UI.cpp / UI.h
-│   └── main.cpp
-│
-├── docs/
+├── Config.h
+├── Direction.h
+├── Game.cpp / Game.h
+├── GameTimer.cpp / GameTimer.h
+├── LevelManager.cpp / LevelManager.h
+├── Map.cpp / Map.h
+├── Player.cpp / Player.h
+├── ResourcePath.h
+├── UI.cpp / UI.h
 ├── CMakeLists.txt
 └── README.md
 ```
@@ -325,41 +321,8 @@ main
 | Участник   | Роль           | Ответственность                    |
 | ---------- | -------------- | ---------------------------------- |
 | Екатерина  | Lead Developer | Player и игровая логика            |
-| Александра | Team Lead      | Система уровней                    |
-| Елена      | Developer      | Карта и генерация лабиринтов       |
-| Виктория   | Developer      | Таймер, интерфейс и сборка проекта |
+| Александра | Team Lead      | Система уровней и генерация        |
+| Елена      | Developer      | Карта и сборка проектп             |
+| Виктория   | Developer      | Таймер, интерфейс                  |
 
 ---
-
-## Сборка проекта
-
-### CMake
-
-```bash
-cmake -S . -B build -DSFML_ROOT=C:/SFML-2.6.1
-cmake --build build --config Release
-```
-
-Запуск:
-
-```bash
-./build/TombOfTheMaskStudentEdition.exe
-```
-
-Для MinGW также может использоваться:
-
-```bash
-build_windows_mingw.bat
-```
-
----
-
-## Возможные проблемы при запуске
-
-Если появляется ошибка `0xc000007b`, необходимо:
-
-1. Удалить старую папку `build`;
-2. Не использовать DLL-файлы от других версий SFML;
-3. Не смешивать 32-битные и 64-битные библиотеки;
-4. Не смешивать Debug и Release версии DLL;
-5. Использовать сборку SFML для того же компилятора, которым собирается проект.

@@ -22,7 +22,7 @@ namespace Config {
     inline constexpr int CoinPoints = 10;
     inline constexpr int BonusPoints = 25;
 
-    inline const std::string WindowTitle = "Tomb of the Mask - Student Edition";
+    inline const std::string WindowTitle = "Backrooms runner";
     inline const std::string PlayerTexturePath = "assets/images/player.png";
     inline const std::string WallTexturePath = "assets/images/backrooms_1.png";
     inline const std::string CoinTexturePath = "assets/images/coin.png";

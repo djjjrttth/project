@@ -142,7 +142,7 @@ void UI::drawMenu(sf::RenderWindow& window, int selectedIndex) const {
         return;
     }
 
-    drawCenteredText(window, "TOMB OF THE MASK", 104.f, 54, sf::Color(255, 235, 150));
+    drawCenteredText(window, "Backrooms runner", 104.f, 54, sf::Color(255, 235, 150));
     drawCenteredText(window, "Student Edition", 154.f, 28, sf::Color(255, 247, 215));
     drawCenteredText(window, "W / S or arrows - select   Enter - confirm", 694.f, 22, sf::Color(245, 238, 200));
     drawCenteredText(window, "In game: WASD / arrows - move one cell   R - restart   Esc - menu", 732.f, 18, sf::Color(220, 210, 170));

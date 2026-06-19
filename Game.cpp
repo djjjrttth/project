@@ -32,7 +32,7 @@ Game::Game()
     player.loadTexture(findExistingPath(Config::PlayerTexturePath));
     map.loadTextures(findExistingPath(Config::WallTexturePath), findExistingPath(Config::CoinTexturePath));
 
-    std::cout << "Tomb of the Mask - Student Edition started.\n";
+    std::cout << "Backrooms runner started.\n";
     std::cout << "Controls: menu W/S or arrows + Enter, gameplay WASD/arrows, R restart, Esc menu.\n";
 }
 

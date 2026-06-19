@@ -85,10 +85,10 @@ public:
     }
 
 
-    // МЕТОД ДЛЯ РЕЖИМА 2 (БЕСКОНЕЧНЫЙ ЛАБИРИНТ - АЛГОРИТМ КАТИ)
+    // МЕТОД ДЛЯ РЕЖИМА 2 (БЕСКОНЕЧНЫЙ ЛАБИРИНТ)
 
     void generateDynamicLevel(int width, int height) {
-        // Внутренний алгоритм считает всё в int (Катина логика)
+        // Внутренний алгоритм считает всё в int
         vector<vector<int>> intGrid(height, vector<int>(width, 1));
 
         int startX = 1;

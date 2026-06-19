@@ -11,7 +11,7 @@ namespace Config {
     inline constexpr unsigned int WindowWidth = GridWidth * CellSize;
     inline constexpr unsigned int WindowHeight = GridHeight * CellSize + TopPanelHeight;
 
-    inline constexpr float PlayerSpeed = 700.f;
+    inline constexpr float PlayerSpeed = 1300.f;
     inline constexpr float LevelTimeLimit = 45.f;
     inline constexpr float TimeBonusSeconds = 6.f;
     inline constexpr float LevelTransitionSeconds = 1.15f;
